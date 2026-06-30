@@ -38,6 +38,18 @@ Run the demo simulation (A → NOT → B → BUF → C):
 ./build/simulation
 ```
 
+## Continuous integration
+
+[`.github/workflows/ci.yml`](.github/workflows/ci.yml) builds and runs the full
+test suite (clang-18, C++20 modules) on every push and pull request.
+
+To run the same gate locally before each commit, enable the hook:
+
+```sh
+git config core.hooksPath .githooks    # build + test on `git commit`
+git commit --no-verify                 # bypass once if needed
+```
+
 ## Execution model
 
 ```

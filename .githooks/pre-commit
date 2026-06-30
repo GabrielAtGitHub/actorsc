@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+# Local pre-commit gate: configure, build, and test before allowing a commit.
+# Mirrors the GitHub Actions CI (.github/workflows/ci.yml).
+#
+# Enable with:   git config core.hooksPath .githooks
+# Bypass once:   git commit --no-verify
+set -euo pipefail
+
+# pip-installed cmake/ninja live here on this dev box.
+export PATH="$HOME/.local/bin:$PATH"
+
+ROOT="$(git rev-parse --show-toplevel)"
+cd "$ROOT"
+
+echo "[pre-commit] configuring…"
+cmake -S . -B build -G Ninja \
+    -DCMAKE_BUILD_TYPE=Debug \
+    -DCMAKE_CXX_COMPILER=clang++-18 \
+    -DCMAKE_C_COMPILER=clang-18 >/dev/null
+
+echo "[pre-commit] building…"
+cmake --build build
+
+echo "[pre-commit] testing…"
+ctest --test-dir build --output-on-failure --timeout 60
+
+echo "[pre-commit] OK"
