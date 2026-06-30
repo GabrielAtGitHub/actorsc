@@ -1,0 +1,34 @@
+{
+    // ---- CMake Tools (if you use the extension) -------------------------
+    "cmake.generator": "Ninja",
+    "cmake.buildDirectory": "${workspaceFolder}/build",
+    "cmake.configureOnOpen": true,
+    "cmake.configureSettings": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": true,
+        "CMAKE_CXX_COMPILER": "clang++-18",
+        "CMAKE_C_COMPILER": "clang-18"
+    },
+    // ninja was installed via pip into ~/.local/bin, which VS Code may not
+    // have on PATH; make sure CMake Tools and the integrated terminal find it.
+    "cmake.environment": {
+        "PATH": "${env:HOME}/.local/bin:${env:PATH}"
+    },
+    "terminal.integrated.env.linux": {
+        "PATH": "${env:HOME}/.local/bin:${env:PATH}"
+    },
+
+    // ---- C/C++ IntelliSense --------------------------------------------
+    "C_Cpp.default.compilerPath": "/usr/bin/clang++-18",
+    "C_Cpp.default.compileCommands": "${workspaceFolder}/build/compile_commands.json",
+    "C_Cpp.default.cppStandard": "c++20",
+    "C_Cpp.default.intelliSenseMode": "linux-clang-x64",
+
+    // ---- Editor --------------------------------------------------------
+    "editor.formatOnSave": true,
+    "files.associations": {
+        "*.cppm": "cpp",
+        "*.ixx": "cpp"
+    },
+    "C_Cpp.clang_format_fallbackStyle": "LLVM"
+}

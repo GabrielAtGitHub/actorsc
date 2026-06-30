@@ -1,0 +1,28 @@
+# Build directories
+/build/
+/build_manual/
+build*/
+cmake-build-*/
+
+# CMake artifacts
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+compile_commands.json
+CTestTestfile.cmake
+_deps/
+
+# Compiled module interfaces / objects
+*.pcm
+*.o
+*.obj
+*.a
+*.so
+*.out
+
+# Editor / OS noise
+*.swp
+*~
+.DS_Store
+
+# Keep the shared .vscode workspace config (not ignored on purpose)
