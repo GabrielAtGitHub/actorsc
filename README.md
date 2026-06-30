@@ -1,5 +1,7 @@
 # actorsc
 
+[![CI](https://github.com/GabrielAtGitHub/actorsc/actions/workflows/ci.yml/badge.svg)](https://github.com/GabrielAtGitHub/actorsc/actions/workflows/ci.yml)
+
 A deterministic, concurrent, **VHDL-style signal-driven actor engine** in C++20.
 
 Actors (VHDL *processes*) read the **current** values of their input signals and
