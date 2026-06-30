@@ -315,7 +315,7 @@ flowchart LR
 ```mermaid
 flowchart TD
 
-    A[Start Simulation Cycle (Time T)] --> B[Delta Cycle 1]
+    A["Start Simulation Cycle (Time T)"] --> B[Delta Cycle 1]
     B --> C[Execute Active Processes]
     C --> D[Compute Signal Transactions]
     D --> E{Any Transactions?}
