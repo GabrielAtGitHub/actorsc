@@ -45,7 +45,7 @@ Actors are concurrent computational units:
 Signals are typed values with:
 
 - **current_value** — visible during the current delta cycle  
-- **scheduled_value** — computed during delta cycle, committed at simulation cycle boundary  
+- **scheduled_value** — computed during a delta cycle, committed at the delta‑cycle boundary  
 - **transaction** — scheduled_value ≠ current_value  
 
 Signals satisfy a generic concept:
@@ -60,10 +60,13 @@ concept SignalValue = requires(T v) {
 ### **2.4 Execution Model**
 The runtime consists of:
 
-- **Delta cycles** — resolve all signal transactions until stable  
-- **Simulation cycles** — commit scheduled values and advance time  
+- **Delta cycles** — resolve all signal transactions until stable, committing scheduled → current at each delta‑cycle boundary  
+- **Simulation cycles** — re‑run all processes once, delta‑resolve to a fixed point, then advance time  
 
-This ensures deterministic fixed‑point convergence.
+This ensures deterministic fixed‑point convergence. Signals are updated
+(committed) at every delta‑cycle boundary — matching IEEE‑1076 signal‑update
+semantics — which is what lets values propagate through the graph and the
+delta loop terminate.
 
 ---
 
@@ -315,21 +318,19 @@ flowchart LR
 ```mermaid
 flowchart TD
 
-    A["Start Simulation Cycle (Time T)"] --> B[Delta Cycle 1]
-    B --> C[Execute Active Processes]
-    C --> D[Compute Signal Transactions]
-    D --> E{Any Transactions?}
+    A["Start Simulation Cycle (Time T)"] --> B[Execute Active Processes]
+    B --> C[Compute Signal Transactions]
+    C --> D[Activate Sensitive Processes]
+    D --> E[Commit scheduled → current at delta boundary]
+    E --> F{Any Active Processes?}
 
-    E -->|Yes| F[Activate Sensitive Processes]
-    F --> B
+    F -->|Yes| B
+    F -->|No| G[Fixed Point Reached]
+    G --> H[Advance Simulation Time]
+    H --> I{Any External Stimuli?}
 
-    E -->|No| G[Delta Cycles Exhausted]
-    G --> H[Commit scheduled → current]
-    H --> I[Advance Simulation Time]
-    I --> J{Any External Stimuli?}
-
-    J -->|Yes| A
-    J -->|No| K[Simulation Complete]
+    I -->|Yes| A
+    I -->|No| J[Simulation Complete]
 ```
 
 ---
@@ -341,7 +342,7 @@ stateDiagram-v2
     [*] --> Current
     Current --> Scheduled: Process writes scheduled value
     Scheduled --> Transaction: scheduled != current
-    Transaction --> Current: Commit at simulation cycle boundary
+    Transaction --> Current: Commit at delta‑cycle boundary
 ```
 
 ---
@@ -360,9 +361,9 @@ flowchart LR
 ## **13. Formal Invariants**
 
 ### **13.1 Signal Invariants**
-- **Current value is constant** during a delta cycle  
+- **Current value is constant** during process execution within a delta cycle; it is updated at the delta‑cycle boundary  
 - **Transactions exist iff** scheduled_value ≠ current_value  
-- **Commit correctness:**  
+- **Commit correctness:** at each delta boundary, a transacting signal's current value becomes its scheduled value  
   \[
   current_{T+\Delta} = scheduled_T
   \]

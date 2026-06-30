@@ -65,26 +65,18 @@ simulation cycle (time T):
   advance time; apply external stimuli; repeat
 ```
 
-## Deviations from the spec documents
+## Spec conformance
 
-Both are required for the engine to be correct and compilable; everything else
-follows `PROJECT_PLAN.md` / `CLAUDE.md` exactly (terminology, module layout,
-signal/actor/scheduler/IoC structure, invariants, test taxonomy).
+The implementation follows [`PROJECT_PLAN.md`](PROJECT_PLAN.md) and
+[`CLAUDE.md`](CLAUDE.md) — terminology, C++20 module layout, signal / actor /
+scheduler / IoC structure, formal invariants, and test taxonomy.
 
-1. **Header-only (`.hpp`) instead of C++20 named modules (`.cppm`).**
-   The spec asks for `.cppm` modules. Named modules currently require
-   `clang-scan-deps` + Ninja ≥ 1.11 under CMake, which is not available in every
-   toolchain. Using headers keeps the *exact same* module boundaries and public
-   API while building on any C++20 compiler with stock CMake. Each spec module
-   maps 1:1 to a header (e.g. `signals.base` → `signals/signal_base.hpp`).
+Two implementation details worth knowing:
 
-2. **Signals commit per delta cycle, not only at the simulation-cycle boundary.**
-   The PROJECT_PLAN diagram shows `commit scheduled → current` only after delta
-   cycles are "exhausted". Taken literally, a signal with `scheduled != current`
-   keeps its transaction forever, so the delta loop never terminates. IEEE-1076
-   updates signals at *every* delta-cycle boundary; that is what lets values
-   propagate through the graph and reach a fixed point. The "current value is
-   constant during a delta cycle" invariant still holds: current is frozen
-   during process execution and updated only at the delta boundary.
-   `DeltaCycleEngine` also enforces a `kMaxDeltaIterations` guard that throws on
-   a non-converging (oscillating) graph instead of hanging.
+- **Module names avoid keywords.** `bool` and `int` cannot be module-name
+  components, so the bool/int signal modules are `signals.signal_bool` /
+  `signals.signal_int` (file names match the spec: `signal_bool.cppm`,
+  `signal_int.cppm`).
+- **Convergence guard.** `DeltaCycleEngine` enforces a `kMaxDeltaIterations`
+  limit and throws on a non-converging (oscillating) actor graph rather than
+  looping forever.

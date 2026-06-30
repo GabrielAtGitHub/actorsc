@@ -143,12 +143,13 @@ Claude must implement:
 - Execute active processes concurrently  
 - Compute signal transactions  
 - Activate sensitive processes  
-- Repeat until stable  
+- Commit scheduled → current at the delta‑cycle boundary  
+- Repeat until stable (no active processes remain)  
 
 ### **6.2 Simulation Cycle Engine**
-- Commit scheduled → current  
+- Re‑run all processes once, then delta‑resolve to a fixed point  
 - Advance time  
-- Determine next active processes  
+- Apply external stimuli to determine the next active processes  
 
 Claude must follow the exact VHDL semantics:
 
@@ -222,9 +223,9 @@ Claude must scaffold but not implement distributed tests.
 Claude must ensure all generated code respects:
 
 ### **10.1 Signal Invariants**
-- Current value is constant during delta cycle  
+- Current value is constant during process execution within a delta cycle; it is updated at the delta‑cycle boundary  
 - Transactions exist iff scheduled ≠ current  
-- Commit correctness:  
+- Commit correctness (applied at each delta boundary):  
   \[
   current_{T+\Delta} = scheduled_T
   \]
@@ -255,21 +256,19 @@ Claude must generate assertions where appropriate.
 ```mermaid
 flowchart TD
 
-    A["Start Simulation Cycle (Time T)"] --> B[Delta Cycle 1]
-    B --> C[Execute Active Processes]
-    C --> D[Compute Signal Transactions]
-    D --> E{Any Transactions?}
+    A["Start Simulation Cycle (Time T)"] --> B[Execute Active Processes]
+    B --> C[Compute Signal Transactions]
+    C --> D[Activate Sensitive Processes]
+    D --> E[Commit scheduled → current at delta boundary]
+    E --> F{Any Active Processes?}
 
-    E -->|Yes| F[Activate Sensitive Processes]
-    F --> B
+    F -->|Yes| B
+    F -->|No| G[Fixed Point Reached]
+    G --> H[Advance Simulation Time]
+    H --> I{Any External Stimuli?}
 
-    E -->|No| G[Delta Cycles Exhausted]
-    G --> H[Commit scheduled → current]
-    H --> I[Advance Simulation Time]
-    I --> J{Any External Stimuli?}
-
-    J -->|Yes| A
-    J -->|No| K[Simulation Complete]
+    I -->|Yes| A
+    I -->|No| J[Simulation Complete]
 ```
 
 ### **Module Relationships**
