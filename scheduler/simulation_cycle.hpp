@@ -1,24 +1,24 @@
-module;
+#pragma once
 #include <cstdint>
 #include <functional>
 #include <unordered_map>
 #include <vector>
 
-export module scheduler.simulation_cycle;
+#include "actors/actor_base.hpp"
+#include "actors/actor_context.hpp"
+#include "signals/signal_concepts.hpp"
+#include "scheduler/delta_cycle.hpp"
+#include "scheduler/thread_pool.hpp"
 
-export import actors.base;
-export import scheduler.delta_cycle;
-export import scheduler.thread_pool;
-
-export struct SimulationStats {
+struct SimulationStats {
     uint64_t simulation_cycles{0};
     uint64_t total_delta_iterations{0};
     uint64_t total_actor_activations{0};
 };
 
-export using StimulusFn = std::function<bool(uint64_t simulation_time)>;
+using StimulusFn = std::function<bool(uint64_t simulation_time)>;
 
-export class SimulationCycleEngine {
+class SimulationCycleEngine {
 public:
     explicit SimulationCycleEngine(ThreadPool& pool)
         : delta_engine_(pool) {}

@@ -1,4 +1,4 @@
-module;
+#pragma once
 #include <cstdint>
 #include <future>
 #include <stdexcept>
@@ -6,12 +6,12 @@ module;
 #include <unordered_set>
 #include <vector>
 
-export module scheduler.delta_cycle;
+#include "actors/actor_base.hpp"
+#include "actors/actor_context.hpp"
+#include "signals/signal_concepts.hpp"
+#include "scheduler/thread_pool.hpp"
 
-export import actors.base;
-export import scheduler.thread_pool;
-
-export struct DeltaCycleStats {
+struct DeltaCycleStats {
     uint32_t iterations{0};
     uint64_t total_actor_activations{0};
 };
@@ -20,9 +20,9 @@ export struct DeltaCycleStats {
 // well-formed (combinational, acyclic-enough) design converges to a fixed
 // point well before this; hitting the limit means the actor graph oscillates
 // and would otherwise hang, so we fail loudly instead.
-export inline constexpr uint32_t kMaxDeltaIterations = 100000;
+inline constexpr uint32_t kMaxDeltaIterations = 100000;
 
-export class DeltaCycleEngine {
+class DeltaCycleEngine {
 public:
     explicit DeltaCycleEngine(ThreadPool& pool) : pool_(pool) {}
 
@@ -38,11 +38,6 @@ public:
     //   4. Signals with transactions are committed (scheduled -> current).
     //      This update at the delta-cycle boundary is what lets values
     //      propagate through the graph and the loop reach a fixed point.
-    //
-    // NOTE: this commits per delta cycle, which is required for convergence
-    // and matches IEEE-1076 signal-update semantics. The PROJECT_PLAN diagram
-    // shows commit only at the simulation-cycle boundary; that variant never
-    // clears transactions and so cannot terminate.
     DeltaCycleStats run(
         std::vector<ActorBase*> active,
         const std::vector<SignalBase*>& all_signals,

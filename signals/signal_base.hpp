@@ -1,13 +1,11 @@
-module;
+#pragma once
 #include <cassert>
 #include <string>
 #include <utility>
 
-export module signals.base;
+#include "signals/signal_concepts.hpp"
 
-export import signals.concepts;
-
-export template <SignalValue T>
+template <SignalValue T>
 class Signal : public SignalBase {
 public:
     explicit Signal(std::string signal_name, T initial = T{})

@@ -31,30 +31,22 @@ Those are defined in `PROJECT_PLAN.md` and `CLAUDE.md`.
 - WSL2 (Ubuntu recommended)
 
 ### **2.2 Compiler**
-You must use a compiler with **full C++20 module support**:
+The engine is **header-only**, so any C++20 compiler works (concepts,
+`<ranges>`, etc. — no named-module toolchain required):
 
 - **Clang ≥ 17** (recommended; this project is verified with **Clang 18**)  
-- **GCC ≥ 14** (partial module support; improving)  
-- **MSVC ≥ VS2022 17.10** (good module support)
+- **GCC ≥ 10**  
+- **MSVC ≥ VS2022**
 
-Clang is recommended for consistency across WSL2.
-
-> **C++20 modules require `clang-scan-deps`.** CMake uses it to scan the
-> `.cppm` files and build the module dependency graph. On Debian/Ubuntu this
-> tool is **not** in the `clang-NN` or `llvm-NN-tools` packages — it ships in
-> **`clang-tools-NN`** (e.g. `clang-tools-18`). Without it, configuration fails
-> with `CMAKE_CXX_COMPILER_CLANG_SCAN_DEPS-NOTFOUND`. See §4.2.
+Clang is recommended for consistency across WSL2. (Named C++20 modules are
+deferred — see PROJECT_PLAN.md "Appendix: C++20 Modules (Deferred)".)
 
 ### **2.3 Build System**
-- **CMake ≥ 3.28** (stable C++20 module support; verified with **CMake 4.3**)  
-- **Ninja ≥ 1.11** (required for module `dyndep`; fast incremental builds)
-
-> The Ninja shipped by Ubuntu 20.04 apt is **1.10**, which is too old for
-> modules (`The Ninja generator does not support C++20 modules using Ninja
-> version 1.10.0`). Install a newer Ninja with `pip` (see §4.2).
+- **CMake ≥ 3.16**  
+- Any generator (**Ninja** recommended for fast incremental builds; the default
+  **Make** generator also works)
 
 ### **2.4 Tools**
-- `clang-scan-deps` (**required** for modules — from `clang-tools-NN`)  
 - `gdb` or `lldb` (this project's `.vscode` debug configs use **gdb**)  
 - `clang-tidy`  
 - `clang-format`  
@@ -85,10 +77,10 @@ Your repository should follow this structure:
     DEV_ENVIRONMENT.md
 ```
 
-Module files use `.cppm` (or `.ixx` if you choose that convention). Each
-spec module maps to one `.cppm` (e.g. `signals.base` →
-`signals/signal_base.cppm`). Note `bool`/`int` are keywords, so those two
-signal modules are named `signals.signal_bool` / `signals.signal_int`.
+Components are header-only (`.hpp`, `#pragma once`), one file per component,
+included by project-root-relative path (e.g. `#include "signals/signal_base.hpp"`).
+C++20 named modules (`.cppm`) are deferred — see PROJECT_PLAN.md
+"Appendix: C++20 Modules (Deferred)".
 
 ---
 
@@ -109,8 +101,9 @@ sudo apt update
 sudo apt install -y \
     build-essential \
     clang-18 \
-    clang-tools-18 \
     lld-18 \
+    cmake \
+    ninja-build \
     gdb \
     valgrind \
     linux-tools-common \
@@ -119,33 +112,27 @@ sudo apt install -y \
     heaptrack
 ```
 
-> **`clang-tools-18` is mandatory** — it provides `clang-scan-deps`, without
-> which CMake cannot build the `.cppm` modules.
-
-#### Newer CMake + Ninja via pip
-
-The apt `cmake` (3.16 on 20.04) and `ninja-build` (1.10) are too old for
-modules. Install up-to-date versions with `pip` (they land in `~/.local/bin`,
-so make sure that is on your `PATH`):
+The apt `cmake` (≥ 3.16) and `ninja-build` are sufficient for the header-only
+build. If you prefer newer versions (e.g. for other projects), `pip` installs
+them into `~/.local/bin` — just ensure that is on your `PATH`:
 
 ```
-pip3 install --upgrade cmake ninja
+pip3 install --upgrade cmake ninja   # optional
 ```
 
 Verify:
 
 ```
-cmake --version    # >= 3.28
-ninja --version    # >= 1.11
-clang-scan-deps-18 --version
+clang++-18 --version
+cmake --version    # >= 3.16
 ```
 
 ### **4.3 Set Clang as default**
 Optional:
 
 ```
-sudo update-alternatives --install /usr/bin/cc cc /usr/bin/clang-17 100
-sudo update-alternatives --install /usr/bin/c++ c++ /usr/bin/clang++-17 100
+sudo update-alternatives --install /usr/bin/cc cc /usr/bin/clang-18 100
+sudo update-alternatives --install /usr/bin/c++ c++ /usr/bin/clang++-18 100
 ```
 
 ---
@@ -173,8 +160,8 @@ want richer Git history.
 
 | File | Role |
 |------|------|
-| `settings.json` | CMake Tools defaults (Ninja, `Debug`, `clang++-18`/`clang-18`, `CMAKE_EXPORT_COMPILE_COMMANDS`), IntelliSense compiler/standard, `*.cppm` → C++ association, format-on-save. Prepends `~/.local/bin` to `PATH` so the pip-installed Ninja is found. |
-| `c_cpp_properties.json` | Points IntelliSense at `build/compile_commands.json` so per-file **module** flags resolve correctly (C++20, clang mode). |
+| `settings.json` | CMake Tools defaults (Ninja, `Debug`, `clang++-18`/`clang-18`, `CMAKE_EXPORT_COMPILE_COMMANDS`), cpptools IntelliSense compiler/standard, format-on-save. Prepends `~/.local/bin` to `PATH` in case CMake/Ninja were pip-installed. |
+| `c_cpp_properties.json` | Points cpptools IntelliSense at `build/compile_commands.json` (C++20, clang mode). |
 | `tasks.json` | `configure`, `build` (default build task), `build: simulation`, `clean rebuild`, `run: simulation`, `test`. Each is a fully-specified `cmake`/`ctest` call, so they work with or without the CMake Tools extension. |
 | `launch.json` | gdb debug configs: **Debug simulation**, **Debug active test file** (debugs the executable matching the open `*.cpp`), **Debug test (pick)** (dropdown of all test executables). |
 
@@ -188,8 +175,7 @@ first configure. If symbols look unresolved, run the **configure** task once.
 - **Test:** *Run Test Task* (`test`), or use the Testing panel via C++ TestMate.  
 - **Debug:** press **F5** and pick a configuration. The 3 disabled
   `DistributedScaffold` tests are skipped by gtest automatically.  
-- **Clean:** run the `clean rebuild` task to wipe `build/` and reconfigure
-  (useful after large module-graph changes).
+- **Clean:** run the `clean rebuild` task to wipe `build/` and reconfigure.
 
 ### **5.4 Debugger note**
 The launch configs use **gdb** (`/usr/bin/gdb`, `MIMode: gdb`). If you prefer
@@ -250,7 +236,7 @@ This runs the main simulation loop:
 Format all code:
 
 ```
-clang-format -i $(find . -name "*.cpp" -o -name "*.hpp" -o -name "*.cppm")
+clang-format -i $(find . -name "*.cpp" -o -name "*.hpp" )
 ```
 
 ### **8.2 clang‑tidy**
@@ -273,19 +259,19 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=address,undefined")
 
 ### **9.1 perf**
 ```
-perf record ./build/runtime/simulation
+perf record ./build/simulation
 perf report
 ```
 
 ### **9.2 heaptrack**
 ```
-heaptrack ./build/runtime/simulation
+heaptrack ./build/simulation
 heaptrack_gui heaptrack.out
 ```
 
 ### **9.3 valgrind**
 ```
-valgrind --leak-check=full ./build/runtime/simulation
+valgrind --leak-check=full ./build/simulation
 ```
 
 ---
@@ -332,36 +318,15 @@ Set compiler explicitly:
 cmake -DCMAKE_CXX_COMPILER=clang++-18 -DCMAKE_C_COMPILER=clang-18 -S . -B build -G Ninja
 ```
 
-### **12.2 `CMAKE_CXX_COMPILER_CLANG_SCAN_DEPS-NOTFOUND`**
-`clang-scan-deps` is missing. Install the `clang-tools` package matching your
-Clang version (it is **not** in `clang-NN` or `llvm-NN-tools`):
-
-```
-sudo apt install -y clang-tools-18
-clang-scan-deps-18 --version   # confirm
-```
-
-Then delete `build/` and reconfigure.
-
-### **12.3 "Ninja generator does not support C++20 modules (version 1.10.0)"**
-Your Ninja is too old. Modules need **≥ 1.11**:
-
-```
-pip3 install --upgrade ninja
-ninja --version                # >= 1.11, from ~/.local/bin
-```
-
-Ensure `~/.local/bin` precedes `/usr/bin` on `PATH` so the pip Ninja wins.
-
-### **12.4 IntelliSense can't resolve `import` / module symbols**
-IntelliSense reads `build/compile_commands.json`. Run the **configure** task
+### **12.2 IntelliSense can't resolve symbols**
+cpptools reads `build/compile_commands.json`. Run the **configure** task
 (or the §6.1 command) once to generate it, then reload the window.
 
-### **12.5 VS Code not attaching debugger**
+### **12.3 VS Code not attaching debugger**
 Ensure the WSL extension is installed and the remote session is active. The
 launch configs expect `gdb` at `/usr/bin/gdb` (`sudo apt install -y gdb`).
 
-### **12.6 Breakpoints don't bind / debugger stops at an address, not a line**
+### **12.4 Breakpoints don't bind / debugger stops at an address, not a line**
 Symptom: gdb stops like `Breakpoint 1, 0x... in main ()` with no
 `at main.cpp:NN`, and source breakpoints never suspend. Cause: Clang ≥ 14
 emits **DWARF 5**, which the Ubuntu 20.04 system **gdb 9.2** cannot read.
@@ -376,12 +341,12 @@ gdb -batch -ex 'info line main' build/simulation                 # expect a main
 Alternatively, use a newer gdb (≥ 10, ideally 12+) or `lldb-18`, both of which
 read DWARF 5.
 
-### **12.7 Wrong CMake kit (clang-cl)**
+### **12.5 Wrong CMake kit (clang-cl)**
 If configure fails with `cannot find -libpath:lib/amd64`, CMake Tools selected
 the **clang-cl** (MSVC-style) kit. Pick **CMake: Select a Kit → Clang …
 x86_64-pc-linux-gnu**, then **CMake: Delete Cache and Reconfigure**.
 
-### **12.8 Generic Ninja build errors**
+### **12.6 Generic build errors**
 Clean build:
 
 ```

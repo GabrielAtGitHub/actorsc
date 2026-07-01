@@ -3,10 +3,10 @@
 #include <memory>
 #include <string>
 
-import signals.signal_bool;
-import actors.base;
-import factory.ioc_container;
-import runtime.elaborated_design;
+#include "signals/signal_base.hpp"
+#include "actors/actor_base.hpp"
+#include "factory/ioc_container.hpp"
+#include "runtime/elaborated_design.hpp"
 
 // ---------------------------------------------------------------------------
 // Example actors: a NOT gate and a buffer, both operating on bool signals.

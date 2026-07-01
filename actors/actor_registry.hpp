@@ -1,15 +1,13 @@
-module;
+#pragma once
 #include <functional>
 #include <memory>
 #include <stdexcept>
 #include <string>
 #include <unordered_map>
 
-export module actors.registry;
+#include "actors/actor_base.hpp"
 
-export import actors.base;
-
-export class ActorRegistry {
+class ActorRegistry {
 public:
     using FactoryFn = std::function<std::unique_ptr<ActorBase>()>;
 

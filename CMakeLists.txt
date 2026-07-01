@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.28)
+cmake_minimum_required(VERSION 3.16)
 project(actorsc CXX)
 
 set(CMAKE_CXX_STANDARD 20)
@@ -15,80 +15,46 @@ endif()
 
 find_package(Threads REQUIRED)
 
-# C++20 named modules require Clang >= 17, Ninja >= 1.11, clang-scan-deps, and
-# CMake >= 3.28. Configure with, e.g.:
-#   cmake -DCMAKE_CXX_COMPILER=clang++-18 -S . -B build -G Ninja
+# ---------------------------------------------------------------------------
+# The engine is header-only. Each spec component is one header; the project
+# root is the single include root so headers are included as, e.g.,
+#   #include "signals/signal_base.hpp"
+# See PROJECT_PLAN.md "Appendix: C++20 Modules (Deferred)" for why named
+# modules are not used yet.
+# ---------------------------------------------------------------------------
+set(ACTORSC_INCLUDE_DIR ${CMAKE_SOURCE_DIR})
 
-# ---------------------------------------------------------------------------
-# signals
-# ---------------------------------------------------------------------------
-add_library(signals)
-target_sources(signals
-    PUBLIC FILE_SET CXX_MODULES FILES
-        signals/signal_concepts.cppm
-        signals/signal_base.cppm
-        signals/signal_bool.cppm
-        signals/signal_int.cppm
-)
+# signals (header-only)
+add_library(signals INTERFACE)
+target_include_directories(signals INTERFACE ${ACTORSC_INCLUDE_DIR})
 
-# ---------------------------------------------------------------------------
-# actors
-# ---------------------------------------------------------------------------
-add_library(actors)
-target_sources(actors
-    PUBLIC FILE_SET CXX_MODULES FILES
-        actors/actor_context.cppm
-        actors/actor_base.cppm
-        actors/actor_registry.cppm
-)
-target_link_libraries(actors PUBLIC signals)
+# actors (depends on signals)
+add_library(actors INTERFACE)
+target_include_directories(actors INTERFACE ${ACTORSC_INCLUDE_DIR})
+target_link_libraries(actors INTERFACE signals)
 
-# ---------------------------------------------------------------------------
-# scheduler
-# ---------------------------------------------------------------------------
-add_library(scheduler)
-target_sources(scheduler
-    PUBLIC FILE_SET CXX_MODULES FILES
-        scheduler/thread_pool.cppm
-        scheduler/delta_cycle.cppm
-        scheduler/simulation_cycle.cppm
-)
-target_link_libraries(scheduler PUBLIC actors signals Threads::Threads)
+# scheduler (depends on actors + signals + threads)
+add_library(scheduler INTERFACE)
+target_include_directories(scheduler INTERFACE ${ACTORSC_INCLUDE_DIR})
+target_link_libraries(scheduler INTERFACE actors signals Threads::Threads)
 
-# ---------------------------------------------------------------------------
-# factory
-# ---------------------------------------------------------------------------
-add_library(factory)
-target_sources(factory
-    PUBLIC FILE_SET CXX_MODULES FILES
-        factory/ioc_container.cppm
-        factory/abstract_factory.cppm
-)
-target_link_libraries(factory PUBLIC scheduler actors signals)
+# factory (depends on scheduler + actors + signals)
+add_library(factory INTERFACE)
+target_include_directories(factory INTERFACE ${ACTORSC_INCLUDE_DIR})
+target_link_libraries(factory INTERFACE scheduler actors signals)
 
-# ---------------------------------------------------------------------------
-# runtime library + simulation executable
-# ---------------------------------------------------------------------------
-add_library(runtime_lib)
-target_sources(runtime_lib
-    PUBLIC FILE_SET CXX_MODULES FILES
-        runtime/elaborated_design.cppm
-)
-target_link_libraries(runtime_lib PUBLIC factory scheduler actors signals)
+# runtime library (depends on factory + scheduler)
+add_library(runtime_lib INTERFACE)
+target_include_directories(runtime_lib INTERFACE ${ACTORSC_INCLUDE_DIR})
+target_link_libraries(runtime_lib INTERFACE factory scheduler actors signals)
 
+# simulation executable
 add_executable(simulation runtime/main.cpp)
 target_link_libraries(simulation PRIVATE runtime_lib)
 
-# ---------------------------------------------------------------------------
-# distributed (stubs, standalone)
-# ---------------------------------------------------------------------------
-add_library(distributed)
-target_sources(distributed
-    PUBLIC FILE_SET CXX_MODULES FILES
-        distributed/node.cppm
-        distributed/transport.cppm
-        distributed/sync.cppm
-)
+# distributed stubs (header-only, standalone)
+add_library(distributed INTERFACE)
+target_include_directories(distributed INTERFACE ${ACTORSC_INCLUDE_DIR})
 
 # ---------------------------------------------------------------------------
 # Tests

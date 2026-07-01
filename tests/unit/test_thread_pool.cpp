@@ -4,7 +4,7 @@
 #include <stdexcept>
 #include <vector>
 
-import scheduler.thread_pool;
+#include "scheduler/thread_pool.hpp"
 
 TEST(ThreadPool, ExecutesSubmittedTask) {
     ThreadPool pool(2);

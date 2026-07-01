@@ -1,16 +1,14 @@
-module;
+#pragma once
 #include <memory>
 #include <thread>
 #include <utility>
 
-export module runtime.elaborated_design;
+#include "factory/abstract_factory.hpp"
+#include "factory/ioc_container.hpp"
+#include "scheduler/simulation_cycle.hpp"
+#include "scheduler/thread_pool.hpp"
 
-export import factory.abstract_factory;
-export import factory.ioc_container;
-export import scheduler.simulation_cycle;
-export import scheduler.thread_pool;
-
-export class Runtime {
+class Runtime {
 public:
     explicit Runtime(
         std::unique_ptr<IoCContainer> container,

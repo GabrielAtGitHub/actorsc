@@ -1,10 +1,8 @@
-module;
+#pragma once
 #include <cstdint>
 
-export module distributed.sync;
-
 // Placeholder — global delta cycle barrier for distributed execution.
-export class DistributedBarrier {
+class DistributedBarrier {
 public:
     virtual ~DistributedBarrier() = default;
     virtual void wait(uint32_t delta_cycle) = 0;

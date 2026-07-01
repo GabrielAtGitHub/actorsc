@@ -6,17 +6,18 @@ engine in C++20. Please keep changes aligned with the authoritative specs:
 
 ## Toolchain
 
-C++20 **named modules** require the full toolchain (see
+The engine is header-only, so the toolchain is conservative (see
 [`DEV_ENVIRONMENT.md`](DEV_ENVIRONMENT.md) for details):
 
-- Clang ≥ 17 (verified with **clang-18**)
-- **`clang-tools-18`** — provides `clang-scan-deps` (not in `clang-18`)
-- CMake ≥ 3.28, Ninja ≥ 1.11
+- Any C++20 compiler (verified with **clang-18**; GCC ≥ 10 also works)
+- CMake ≥ 3.16, any generator (Ninja recommended)
 
 ```sh
-sudo apt-get install -y clang-18 clang-tools-18 lld-18 ninja-build
-pip3 install --upgrade cmake ninja   # if the apt versions are too old
+sudo apt-get install -y clang-18 lld-18 cmake ninja-build
 ```
+
+C++20 named modules are deferred — see PROJECT_PLAN.md
+"Appendix: C++20 Modules (Deferred)".
 
 ## Build & test
 
@@ -65,8 +66,8 @@ git push -u origin feature/my-change
 
 - **Match the spec terminology** (VHDL: process/actor, signal, transaction,
   delta cycle, simulation cycle). Do not introduce "effective/projected" terms.
-- **One spec module per `.cppm`.** Note `bool`/`int` are keywords, so the
-  bool/int signal modules are `signals.signal_bool` / `signals.signal_int`.
+- **One component per header** (`.hpp`, `#pragma once`), included by
+  project-root-relative path. Keep the include graph acyclic.
 - **Keep the formal invariants** (PROJECT_PLAN §13 / CLAUDE §10). In
   particular, signal `current` is constant during process execution and updated
   at the delta-cycle boundary.

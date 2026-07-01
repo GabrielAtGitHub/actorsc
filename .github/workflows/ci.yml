@@ -23,11 +23,8 @@ jobs:
       - name: Install toolchain
         run: |
           sudo apt-get update
-          # clang-tools-18 provides clang-scan-deps, required by CMake to
-          # build C++20 named modules.
           sudo apt-get install -y \
             clang-18 \
-            clang-tools-18 \
             lld-18 \
             ninja-build
 
@@ -36,7 +33,6 @@ jobs:
           cmake --version
           ninja --version
           clang++-18 --version
-          clang-scan-deps-18 --version
 
       - name: Configure
         run: >

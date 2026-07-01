@@ -3,12 +3,12 @@
 #include <memory>
 #include <string>
 
-import signals.signal_bool;
-import actors.base;
-import factory.ioc_container;
-import factory.abstract_factory;
-import scheduler.thread_pool;
-import scheduler.simulation_cycle;
+#include "signals/signal_bool.hpp"
+#include "actors/actor_base.hpp"
+#include "factory/ioc_container.hpp"
+#include "factory/abstract_factory.hpp"
+#include "scheduler/thread_pool.hpp"
+#include "scheduler/simulation_cycle.hpp"
 
 class Inverter : public ActorBase {
 public:

@@ -12,7 +12,7 @@ The system is designed for:
 
 - High‑performance single‑process execution  
 - Future horizontal scaling across multiple machines  
-- Strong modularity using C++20 modules  
+- Strong modularity using header components (C++20 named modules deferred — see Appendix)  
 - Inversion of Control (IoC) for instantiation  
 - Workflow‑driven elaboration (future)  
 - Full gtest coverage (unit, functional, integration)
@@ -70,10 +70,14 @@ delta loop terminate.
 
 ---
 
-## **3. C++20 Module Layout**
+## **3. Component Layout (Header-Based)**
 
-### **3.1 Module List**
-| Module | Purpose |
+The engine is **header-only** (`.hpp`); each component below is a directory of
+headers. C++20 **named modules** are deferred until the toolchain matures — see
+**Appendix: C++20 Modules (Deferred)**.
+
+### **3.1 Component List**
+| Component | Purpose |
 |--------|---------|
 | `signals` | Signal types, concepts, transaction computation |
 | `actors` | Actor interface, sensitivity lists |
@@ -396,6 +400,40 @@ flowchart TD
     P1 --> S3[Signal C]
     S3 --> P2[Process Y]
 ```
+
+---
+
+## **15. Appendix: C++20 Modules (Deferred)**
+
+The design is component-oriented and was briefly implemented with C++20
+**named modules** (`.cppm`). The codebase is now **header-only** (`.hpp`);
+named modules are **deferred** until the toolchain is mature enough.
+
+### Why deferred
+- **IDE/tooling immaturity (2026).** Named-module IntelliSense is unreliable:
+  cpptools only partially supports `import`; clangd needs
+  `--experimental-modules-support` and its cross-file **index** (type/call
+  hierarchy, find-references) does not fully cover module symbols — so those
+  IDE features break.
+- **BMI incompatibility across compiler versions.** Prebuilt module interfaces
+  (`.pcm`) are not portable across LLVM majors, so an editor's clangd cannot
+  read BMIs built by a different-version compiler (`ast_file_version_too_old`).
+- **Heavier toolchain floor.** Modules need `clang-scan-deps` (`clang-tools-*`),
+  Ninja ≥ 1.11, CMake ≥ 3.28. Headers build with any C++20 compiler and
+  CMake ≥ 3.16 — the conservative toolchain this project targets.
+- **Keyword collisions.** `bool`/`int` cannot be module-name components.
+
+### What is preserved for the migration
+- One component per file with a clean, acyclic include graph — each `.hpp`
+  maps 1:1 to a future `.cppm` (e.g. `signals/signal_base.hpp` → `signals.base`;
+  the bool/int units would become `signals.signal_bool`/`signals.signal_int`).
+- Public API, VHDL semantics, and all §13 invariants are unchanged, so the
+  switch is mechanical (`#pragma once`/`#include` ↔ `export module`/`import`).
+
+### Revisit criteria
+Adopt named modules once **either** cpptools **or** clangd offers stable
+module IntelliSense with index-backed type/call hierarchy, **and** BMIs are
+version-tolerant (or the editor's clangd tracks the build compiler).
 
 ---
 

@@ -3,10 +3,10 @@
 #include <unordered_map>
 #include <vector>
 
-import signals.signal_bool;
-import actors.base;
-import scheduler.thread_pool;
-import scheduler.delta_cycle;
+#include "signals/signal_bool.hpp"
+#include "actors/actor_base.hpp"
+#include "scheduler/thread_pool.hpp"
+#include "scheduler/delta_cycle.hpp"
 
 class NotActor : public ActorBase {
 public:

@@ -3,11 +3,11 @@
 #include <memory>
 #include <string>
 
-import signals.signal_bool;
-import signals.signal_int;
-import actors.base;
-import factory.ioc_container;
-import runtime.elaborated_design;
+#include "signals/signal_bool.hpp"
+#include "signals/signal_int.hpp"
+#include "actors/actor_base.hpp"
+#include "factory/ioc_container.hpp"
+#include "runtime/elaborated_design.hpp"
 
 class Accumulator : public ActorBase {
 public:

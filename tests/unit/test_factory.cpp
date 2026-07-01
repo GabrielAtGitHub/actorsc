@@ -3,11 +3,11 @@
 #include <stdexcept>
 #include <string>
 
-import signals.signal_bool;
-import actors.base;
-import factory.ioc_container;
-import factory.abstract_factory;
-import scheduler.thread_pool;
+#include "signals/signal_bool.hpp"
+#include "actors/actor_base.hpp"
+#include "factory/ioc_container.hpp"
+#include "factory/abstract_factory.hpp"
+#include "scheduler/thread_pool.hpp"
 
 class DummyActor : public ActorBase {
 public:

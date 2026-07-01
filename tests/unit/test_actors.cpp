@@ -3,9 +3,9 @@
 #include <string>
 #include <vector>
 
-import signals.base;
-import signals.signal_bool;
-import actors.base;
+#include "signals/signal_base.hpp"
+#include "signals/signal_bool.hpp"
+#include "actors/actor_base.hpp"
 
 class EchoActor : public ActorBase {
 public:

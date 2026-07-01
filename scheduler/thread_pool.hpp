@@ -1,4 +1,4 @@
-module;
+#pragma once
 #include <atomic>
 #include <condition_variable>
 #include <functional>
@@ -10,9 +10,7 @@ module;
 #include <thread>
 #include <vector>
 
-export module scheduler.thread_pool;
-
-export class ThreadPool {
+class ThreadPool {
 public:
     explicit ThreadPool(std::size_t num_threads) {
         if (num_threads == 0)
