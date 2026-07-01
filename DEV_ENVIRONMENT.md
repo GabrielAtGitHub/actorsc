@@ -361,7 +361,27 @@ IntelliSense reads `build/compile_commands.json`. Run the **configure** task
 Ensure the WSL extension is installed and the remote session is active. The
 launch configs expect `gdb` at `/usr/bin/gdb` (`sudo apt install -y gdb`).
 
-### **12.6 Generic Ninja build errors**
+### **12.6 Breakpoints don't bind / debugger stops at an address, not a line**
+Symptom: gdb stops like `Breakpoint 1, 0x... in main ()` with no
+`at main.cpp:NN`, and source breakpoints never suspend. Cause: Clang ≥ 14
+emits **DWARF 5**, which the Ubuntu 20.04 system **gdb 9.2** cannot read.
+The build sets `-gdwarf-4` for Debug (see `CMakeLists.txt`) to fix this — make
+sure you are on a **Debug** build and have rebuilt. Verify:
+
+```
+readelf --debug-dump=info build/simulation | grep -m1 Version   # expect 4
+gdb -batch -ex 'info line main' build/simulation                 # expect a main.cpp line
+```
+
+Alternatively, use a newer gdb (≥ 10, ideally 12+) or `lldb-18`, both of which
+read DWARF 5.
+
+### **12.7 Wrong CMake kit (clang-cl)**
+If configure fails with `cannot find -libpath:lib/amd64`, CMake Tools selected
+the **clang-cl** (MSVC-style) kit. Pick **CMake: Select a Kit → Clang …
+x86_64-pc-linux-gnu**, then **CMake: Delete Cache and Reconfigure**.
+
+### **12.8 Generic Ninja build errors**
 Clean build:
 
 ```
