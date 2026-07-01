@@ -1,20 +1,20 @@
-module;
+#pragma once
 #include <stdexcept>
 #include <unordered_map>
 #include <vector>
 
-export module factory.abstract_factory;
+#include "signals/signal_concepts.hpp"
+#include "actors/actor_base.hpp"
+#include "factory/ioc_container.hpp"
+#include "scheduler/thread_pool.hpp"
 
-export import factory.ioc_container;
-export import scheduler.thread_pool;
-
-export struct ElaboratedDesign {
+struct ElaboratedDesign {
     std::vector<SignalBase*> signals;
     std::vector<ActorBase*> actors;
     std::unordered_map<SignalBase*, std::vector<ActorBase*>> sensitivity_map;
 };
 
-export class AbstractFactory {
+class AbstractFactory {
 public:
     explicit AbstractFactory(IoCContainer& container, ThreadPool& pool)
         : container_(container), pool_(pool) {}

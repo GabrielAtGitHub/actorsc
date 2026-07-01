@@ -1,15 +1,13 @@
-module;
+#pragma once
 #include <concepts>
 #include <string>
 
-export module signals.concepts;
-
-export template <typename T>
+template <typename T>
 concept SignalValue = requires(T a, T b) {
     { a == b } -> std::convertible_to<bool>;
 };
 
-export class SignalBase {
+class SignalBase {
 public:
     virtual ~SignalBase() = default;
     virtual void compute_transaction() = 0;

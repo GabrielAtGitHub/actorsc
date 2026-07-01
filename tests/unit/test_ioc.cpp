@@ -3,9 +3,9 @@
 #include <stdexcept>
 #include <string>
 
-import signals.signal_bool;
-import actors.base;
-import factory.ioc_container;
+#include "signals/signal_bool.hpp"
+#include "actors/actor_base.hpp"
+#include "factory/ioc_container.hpp"
 
 class DummyActor : public ActorBase {
 public:

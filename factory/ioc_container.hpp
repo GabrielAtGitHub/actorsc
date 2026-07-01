@@ -1,20 +1,19 @@
-module;
+#pragma once
 #include <memory>
 #include <stdexcept>
 #include <string>
 #include <unordered_map>
 #include <vector>
 
-export module factory.ioc_container;
+#include "signals/signal_concepts.hpp"
+#include "actors/actor_base.hpp"
 
-export import actors.base;
-
-export struct SignalBinding {
+struct SignalBinding {
     std::string actor_name;
     std::string signal_name;
 };
 
-export class IoCContainer {
+class IoCContainer {
 public:
     void register_signal(std::string signal_name,
                          std::shared_ptr<SignalBase> signal)

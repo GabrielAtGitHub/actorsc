@@ -43,7 +43,7 @@ Run the demo simulation (A → NOT → B → BUF → C):
 ## Continuous integration
 
 [`.github/workflows/ci.yml`](.github/workflows/ci.yml) builds and runs the full
-test suite (clang-18, C++20 modules) on every push and pull request.
+test suite on every push and pull request.
 
 To run the same gate locally before each commit, enable the hook:
 
@@ -68,15 +68,16 @@ simulation cycle (time T):
 ## Spec conformance
 
 The implementation follows [`PROJECT_PLAN.md`](PROJECT_PLAN.md) and
-[`CLAUDE.md`](CLAUDE.md) — terminology, C++20 module layout, signal / actor /
+[`CLAUDE.md`](CLAUDE.md) — terminology, component layout, signal / actor /
 scheduler / IoC structure, formal invariants, and test taxonomy.
 
-Two implementation details worth knowing:
+Two things worth knowing:
 
-- **Module names avoid keywords.** `bool` and `int` cannot be module-name
-  components, so the bool/int signal modules are `signals.signal_bool` /
-  `signals.signal_int` (file names match the spec: `signal_bool.cppm`,
-  `signal_int.cppm`).
+- **Header-only, not C++20 named modules.** The engine is `.hpp`-based so it
+  builds on any C++20 compiler with CMake ≥ 3.16 and gives reliable IDE
+  tooling (type/call hierarchy, navigation). Named modules are deferred until
+  the toolchain matures — see *Appendix: C++20 Modules (Deferred)* in
+  PROJECT_PLAN.md.
 - **Convergence guard.** `DeltaCycleEngine` enforces a `kMaxDeltaIterations`
   limit and throws on a non-converging (oscillating) actor graph rather than
   looping forever.

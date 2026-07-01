@@ -1,9 +1,9 @@
 #include <gtest/gtest.h>
 #include <string>
 
-import distributed.node;
-import distributed.transport;
-import distributed.sync;
+#include "distributed/node.hpp"
+#include "distributed/transport.hpp"
+#include "distributed/sync.hpp"
 
 // ---------------------------------------------------------------------------
 // Distributed runtime is a FUTURE extension (PROJECT_PLAN.md §5.2, §7.4).

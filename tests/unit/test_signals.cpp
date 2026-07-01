@@ -2,9 +2,10 @@
 #include <memory>
 #include <string>
 
-import signals.base;
-import signals.signal_bool;
-import signals.signal_int;
+#include "signals/signal_concepts.hpp"
+#include "signals/signal_base.hpp"
+#include "signals/signal_bool.hpp"
+#include "signals/signal_int.hpp"
 
 TEST(SignalConcepts, BoolSatisfiesConcept) {
     static_assert(SignalValue<bool>);

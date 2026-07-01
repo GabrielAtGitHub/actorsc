@@ -1,5 +1,5 @@
 {
-    // ---- CMake Tools (if you use the extension) -------------------------
+    // ---- CMake Tools ---------------------------------------------------
     "cmake.generator": "Ninja",
     "cmake.buildDirectory": "${workspaceFolder}/build",
     "cmake.configureOnOpen": true,
@@ -9,8 +9,8 @@
         "CMAKE_CXX_COMPILER": "clang++-18",
         "CMAKE_C_COMPILER": "clang-18"
     },
-    // ninja was installed via pip into ~/.local/bin, which VS Code may not
-    // have on PATH; make sure CMake Tools and the integrated terminal find it.
+    // ninja/cmake installed via pip land in ~/.local/bin, which VS Code may not
+    // have on PATH; make sure CMake Tools and the integrated terminal find them.
     "cmake.environment": {
         "PATH": "${env:HOME}/.local/bin:${env:PATH}"
     },
@@ -18,31 +18,9 @@
         "PATH": "${env:HOME}/.local/bin:${env:PATH}"
     },
 
-    // ---- IntelliSense: clangd (better C++20 module support than cpptools) --
-    // cpptools' IntelliSense engine only partially understands `import` of
-    // first-party named modules and emits false "could not find module file"
-    // (C/C++ 3275) errors. Disable it and let clangd drive IntelliSense; the
-    // cpptools extension is kept only for the debugger (see launch.json).
-    "C_Cpp.intelliSenseEngine": "disabled",
-    "clangd.arguments": [
-        "--compile-commands-dir=${workspaceFolder}/build",
-        "--background-index",
-        "--header-insertion=never",
-        "--clang-tidy",
-        // Let clangd build its OWN module BMIs from source. Without this,
-        // clangd loads the CMake-built .pcm files, but those are produced by
-        // clang-18 while the extension's clangd is newer (e.g. 22) — the BMI
-        // formats are not compatible across major versions, giving
-        // "ast_file_version_too_old". With this flag clangd rebuilds modules
-        // with its own clang, so imports resolve regardless of that mismatch.
-        "--experimental-modules-support"
-    ],
-    // No clangd.path: let the vscode-clangd extension manage its own clangd
-    // (it auto-downloads a recent build with good C++20 module support). Set
-    // clangd.path only if you want to pin a specific system binary.
-
-    // Left for anyone who re-enables the cpptools engine; ignored while clangd
-    // is active.
+    // ---- C/C++ IntelliSense (cpptools) ---------------------------------
+    // Header-only code, so the stock cpptools engine works fully: type
+    // hierarchy, call hierarchy, go-to-definition, find-references, rename.
     "C_Cpp.default.compilerPath": "/usr/bin/clang++-18",
     "C_Cpp.default.compileCommands": "${workspaceFolder}/build/compile_commands.json",
     "C_Cpp.default.cppStandard": "c++20",
@@ -50,9 +28,5 @@
 
     // ---- Editor --------------------------------------------------------
     "editor.formatOnSave": true,
-    "files.associations": {
-        "*.cppm": "cpp",
-        "*.ixx": "cpp"
-    },
     "C_Cpp.clang_format_fallbackStyle": "LLVM"
 }

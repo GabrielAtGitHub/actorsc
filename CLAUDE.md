@@ -11,7 +11,7 @@ This file instructs **Claude Code** how to:
 
 - Generate code consistent with the **PROJECT_PLAN.md**  
 - Follow the **VHDL‑style execution cycle**  
-- Use the **C++20 module layout**  
+- Use the **modular header layout** (C++20 named modules deferred — see Appendix A)  
 - Respect **IoC + abstract factory instantiation**  
 - Produce **deterministic, concurrent actor code**  
 - Generate **unit, functional, and integration tests**  
@@ -42,46 +42,53 @@ Only **current/scheduled/transaction**.
 
 ---
 
-## **3. Required C++20 Module Structure**
+## **3. Required Component Structure**
 
-Claude must generate code using the following modules:
+The engine is currently **header-only** (`.hpp`). Each architectural component
+is one header; C++20 *named modules* (`.cppm`) are deferred until the toolchain
+matures — see **Appendix A: C++20 Modules (Deferred)** and PROJECT_PLAN.md for
+the rationale. Claude must generate code using the following structure:
 
 ```
 signals/
-    signal_base.cppm
-    signal_bool.cppm
-    signal_int.cppm
-    signal_concepts.cppm
+    signal_base.hpp
+    signal_bool.hpp
+    signal_int.hpp
+    signal_concepts.hpp
 
 actors/
-    actor_base.cppm
-    actor_context.cppm
-    actor_registry.cppm
+    actor_base.hpp
+    actor_context.hpp
+    actor_registry.hpp
 
 scheduler/
-    delta_cycle.cppm
-    simulation_cycle.cppm
-    thread_pool.cppm
+    delta_cycle.hpp
+    simulation_cycle.hpp
+    thread_pool.hpp
 
 factory/
-    ioc_container.cppm
-    abstract_factory.cppm
-    workflow_loader.cppm   (future)
+    ioc_container.hpp
+    abstract_factory.hpp
+    workflow_loader.hpp   (future)
 
 runtime/
     main.cpp
-    elaborated_design.cppm
+    elaborated_design.hpp
 
 distributed/ (future)
-    node.cppm
-    transport.cppm
-    sync.cppm
+    node.hpp
+    transport.hpp
+    sync.hpp
 
 tests/
     unit/
     functional/
     integration/
+    distributed/          (scaffold only)
 ```
+
+Headers use `#pragma once` and include siblings by project-root-relative path,
+e.g. `#include "signals/signal_base.hpp"`.
 
 Claude must **not** invent additional modules unless explicitly instructed.
 
@@ -347,7 +354,7 @@ Claude must treat this file as **the authoritative source of truth**.
 
 Claude must generate:
 
-- C++20 modules  
+- Modular C++20 headers (`.hpp`; named modules deferred — Appendix A)  
 - IoC container  
 - Abstract factory  
 - Scheduler  
@@ -368,5 +375,40 @@ Claude must not generate:
 Claude must use **PROJECT_PLAN.md** + **CLAUDE.md** together as the **complete specification** for all code generation.
 
 Claude must not deviate from these documents without approval.
+
+---
+
+## **Appendix A: C++20 Modules (Deferred)**
+
+The architecture is designed around module-sized components, and the codebase
+was briefly implemented with C++20 **named modules** (`.cppm`). It has been
+converted to **header-only** (`.hpp`) and named modules are **deferred** until
+the surrounding toolchain matures.
+
+**Why deferred:**
+
+- **IDE/tooling immaturity.** IntelliSense for named modules is unreliable in
+  2026: the C/C++ (cpptools) engine only partially supports `import` and emits
+  false errors; clangd requires `--experimental-modules-support` and its
+  cross-file **index** (type hierarchy, call hierarchy, find-references) does
+  not fully cover module symbols.
+- **BMI incompatibility.** Prebuilt module interfaces (`.pcm`) are not portable
+  across compiler major versions, so an editor's clangd (e.g. 22) cannot read
+  BMIs produced by the build compiler (clang-18) — `ast_file_version_too_old`.
+- **Heavier toolchain floor.** Named modules require `clang-scan-deps`
+  (`clang-tools-*`), Ninja ≥ 1.11, and CMake ≥ 3.28. Headers build with any
+  C++20 compiler and CMake ≥ 3.16.
+- **Keyword collisions.** `bool`/`int` cannot be module-name components, forcing
+  awkward names like `signals.signal_bool`.
+
+**What is preserved for a future modules migration:**
+
+- One component per file with clean, acyclic dependencies — each `.hpp` maps
+  1:1 to a future `.cppm` (e.g. `signals/signal_base.hpp` → `signals.base`).
+- The public API, VHDL terminology, and all formal invariants are unchanged.
+
+**Revisit when:** cpptools *or* clangd provides stable named-module IntelliSense
+(including index-backed type/call hierarchy) and BMIs are version-tolerant, or
+the editor clangd version tracks the build compiler.
 
 ---

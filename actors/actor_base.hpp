@@ -1,13 +1,11 @@
-module;
+#pragma once
 #include <string>
 #include <vector>
 
-export module actors.base;
+#include "signals/signal_concepts.hpp"
+#include "actors/actor_context.hpp"
 
-export import signals.concepts;
-export import actors.context;
-
-export class ActorBase {
+class ActorBase {
 public:
     virtual ~ActorBase() = default;
 
