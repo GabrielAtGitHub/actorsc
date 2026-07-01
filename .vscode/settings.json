@@ -28,7 +28,14 @@
         "--compile-commands-dir=${workspaceFolder}/build",
         "--background-index",
         "--header-insertion=never",
-        "--clang-tidy"
+        "--clang-tidy",
+        // Let clangd build its OWN module BMIs from source. Without this,
+        // clangd loads the CMake-built .pcm files, but those are produced by
+        // clang-18 while the extension's clangd is newer (e.g. 22) — the BMI
+        // formats are not compatible across major versions, giving
+        // "ast_file_version_too_old". With this flag clangd rebuilds modules
+        // with its own clang, so imports resolve regardless of that mismatch.
+        "--experimental-modules-support"
     ],
     // No clangd.path: let the vscode-clangd extension manage its own clangd
     // (it auto-downloads a recent build with good C++20 module support). Set
