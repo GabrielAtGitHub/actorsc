@@ -30,9 +30,9 @@
         "--header-insertion=never",
         "--clang-tidy"
     ],
-    // If you installed the system clangd (`sudo apt install clangd-18`), point
-    // at it; otherwise remove this line and the extension downloads its own.
-    "clangd.path": "clangd-18",
+    // No clangd.path: let the vscode-clangd extension manage its own clangd
+    // (it auto-downloads a recent build with good C++20 module support). Set
+    // clangd.path only if you want to pin a specific system binary.
 
     // Left for anyone who re-enables the cpptools engine; ignored while clangd
     // is active.
