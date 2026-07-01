@@ -5,6 +5,14 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+# Emit DWARF 4 in Debug builds. Clang >= 14 defaults to DWARF 5, which the
+# system gdb on Ubuntu 20.04 (9.2) cannot parse — line tables are unreadable,
+# so source-level breakpoints never bind. DWARF 4 is read fine by old gdb and
+# is harmless on newer toolchains. Applies to Clang and GCC.
+if(CMAKE_CXX_COMPILER_ID MATCHES "Clang|GNU")
+    add_compile_options($<$<CONFIG:Debug>:-gdwarf-4>)
+endif()
+
 find_package(Threads REQUIRED)
 
 # C++20 named modules require Clang >= 17, Ninja >= 1.11, clang-scan-deps, and
