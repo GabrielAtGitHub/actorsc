@@ -18,7 +18,24 @@
         "PATH": "${env:HOME}/.local/bin:${env:PATH}"
     },
 
-    // ---- C/C++ IntelliSense --------------------------------------------
+    // ---- IntelliSense: clangd (better C++20 module support than cpptools) --
+    // cpptools' IntelliSense engine only partially understands `import` of
+    // first-party named modules and emits false "could not find module file"
+    // (C/C++ 3275) errors. Disable it and let clangd drive IntelliSense; the
+    // cpptools extension is kept only for the debugger (see launch.json).
+    "C_Cpp.intelliSenseEngine": "disabled",
+    "clangd.arguments": [
+        "--compile-commands-dir=${workspaceFolder}/build",
+        "--background-index",
+        "--header-insertion=never",
+        "--clang-tidy"
+    ],
+    // If you installed the system clangd (`sudo apt install clangd-18`), point
+    // at it; otherwise remove this line and the extension downloads its own.
+    "clangd.path": "clangd-18",
+
+    // Left for anyone who re-enables the cpptools engine; ignored while clangd
+    // is active.
     "C_Cpp.default.compilerPath": "/usr/bin/clang++-18",
     "C_Cpp.default.compileCommands": "${workspaceFolder}/build/compile_commands.json",
     "C_Cpp.default.cppStandard": "c++20",

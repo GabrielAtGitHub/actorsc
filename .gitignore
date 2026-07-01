@@ -25,4 +25,7 @@ _deps/
 *~
 .DS_Store
 
+# clangd background-index cache
+.cache/
+
 # Keep the shared .vscode workspace config (not ignored on purpose)
