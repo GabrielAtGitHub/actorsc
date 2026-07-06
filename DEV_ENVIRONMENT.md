@@ -147,7 +147,10 @@ building, running, testing, and debugging all work out of the box.
 These are listed in `.vscode/extensions.json` and VS Code will offer to install
 them automatically:
 
-- **C/C++** (`ms-vscode.cpptools`) — IntelliSense + debugging  
+- **clangd** (`llvm-vs-code-extensions.vscode-clangd`) — IntelliSense engine,
+  incl. **Type/Class Hierarchy**, call hierarchy, navigation, rename  
+- **C/C++** (`ms-vscode.cpptools`) — used for **debugging** (its IntelliSense
+  engine is disabled in `settings.json` to avoid conflicting with clangd)  
 - **C/C++ Extension Pack** (`ms-vscode.cpptools-extension-pack`)  
 - **CMake Tools** (`ms-vscode.cmake-tools`)  
 - **CMake** (`twxs.cmake`) — syntax highlighting  
@@ -156,12 +159,17 @@ them automatically:
 For WSL also install **WSL** / **Remote Development**, plus **GitLens** if you
 want richer Git history.
 
+> **Why clangd for IntelliSense?** cpptools does not provide the Type/Class
+> Hierarchy view; clangd does. On the header-only code clangd needs no special
+> configuration — just the compile database. (The module-era clangd workarounds
+> — `--experimental-modules-support`, `.clangd`, version-pinning — are gone.)
+
 ### **5.2 What the committed config does**
 
 | File | Role |
 |------|------|
-| `settings.json` | CMake Tools defaults (Ninja, `Debug`, `clang++-18`/`clang-18`, `CMAKE_EXPORT_COMPILE_COMMANDS`), cpptools IntelliSense compiler/standard, format-on-save. Prepends `~/.local/bin` to `PATH` in case CMake/Ninja were pip-installed. |
-| `c_cpp_properties.json` | Points cpptools IntelliSense at `build/compile_commands.json` (C++20, clang mode). |
+| `settings.json` | CMake Tools defaults (Ninja, `Debug`, `clang++-18`/`clang-18`, `CMAKE_EXPORT_COMPILE_COMMANDS`); selects **clangd** for IntelliSense (`--compile-commands-dir=build`) and disables the cpptools engine; format-on-save. Prepends `~/.local/bin` to `PATH` in case CMake/Ninja were pip-installed. |
+| `c_cpp_properties.json` | Fallback cpptools config (C++20, clang mode) pointing at `build/compile_commands.json`; only used if you re-enable the cpptools engine. |
 | `tasks.json` | `configure`, `build` (default build task), `build: simulation`, `clean rebuild`, `run: simulation`, `test`. Each is a fully-specified `cmake`/`ctest` call, so they work with or without the CMake Tools extension. |
 | `launch.json` | gdb debug configs: **Debug simulation**, **Debug active test file** (debugs the executable matching the open `*.cpp`), **Debug test (pick)** (dropdown of all test executables). |
 
