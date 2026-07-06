@@ -18,9 +18,21 @@
         "PATH": "${env:HOME}/.local/bin:${env:PATH}"
     },
 
-    // ---- C/C++ IntelliSense (cpptools) ---------------------------------
-    // Header-only code, so the stock cpptools engine works fully: type
-    // hierarchy, call hierarchy, go-to-definition, find-references, rename.
+    // ---- IntelliSense: clangd ------------------------------------------
+    // clangd provides the Type/Class Hierarchy view (which cpptools does not),
+    // plus call hierarchy, go-to-definition, find-references, and rename.
+    // On the header-only code it needs NO module workarounds — just the
+    // compile database. cpptools' IntelliSense engine is disabled to avoid a
+    // conflict; the cpptools extension is kept only for the debugger.
+    "C_Cpp.intelliSenseEngine": "disabled",
+    "clangd.arguments": [
+        "--compile-commands-dir=${workspaceFolder}/build",
+        "--background-index",
+        "--header-insertion=never"
+    ],
+
+    // Retained for anyone who re-enables the cpptools engine; ignored while
+    // clangd is active.
     "C_Cpp.default.compilerPath": "/usr/bin/clang++-18",
     "C_Cpp.default.compileCommands": "${workspaceFolder}/build/compile_commands.json",
     "C_Cpp.default.cppStandard": "c++20",
